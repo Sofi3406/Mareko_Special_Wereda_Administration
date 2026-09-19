@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { API_BASE } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   // Axios global configuration
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  axios.defaults.baseURL = API_BASE;
   
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

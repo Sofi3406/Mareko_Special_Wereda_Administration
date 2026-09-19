@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Normalize API base URL so callers can set REACT_APP_API_URL with or without trailing '/api'
-const rawApi = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const rawApi = process.env.REACT_APP_API_URL || 'https://mareko-special-wereda-administration.onrender.com/api';
 let API_URL = rawApi.replace(/\/+$/, ''); // strip trailing slashes
 if (!API_URL.toLowerCase().endsWith('/api')) {
   API_URL = `${API_URL}/api`;

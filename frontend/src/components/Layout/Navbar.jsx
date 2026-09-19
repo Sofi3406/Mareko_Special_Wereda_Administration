@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
-import { notificationsAPI } from '../../services/api';
+import { API_BASE, notificationsAPI } from '../../services/api';
 import {
   Bars3Icon,
   XMarkIcon,
@@ -147,7 +147,7 @@ const Navbar = () => {
 
   const unreadCount = notifications.filter((item) => !item.read).length;
 
-  const socketUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+  const socketUrl = API_BASE.replace(/\/api\/?$/, '');
 
   useEffect(() => {
     if (!user?._id) return;
