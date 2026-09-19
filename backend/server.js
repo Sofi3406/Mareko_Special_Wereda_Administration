@@ -40,9 +40,24 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
+
+const frontendOrigins = [
+  ...(process.env.FRONTEND_URL || '').split(',').map((origin) => origin.trim()).filter(Boolean),
+  'https://marekospecialwereda.vercel.app',
+  'http://localhost:3000'
+];
+
+const isAllowedOrigin = (origin, callback) => {
+  if (!origin || frontendOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+
+  return callback(new Error('Origin is not allowed by CORS'));
+};
+
 const io = socketio(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: isAllowedOrigin,
     credentials: true
   }
 });
@@ -50,7 +65,7 @@ app.set('io', io);
 
 // Enable CORS
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: isAllowedOrigin,
   credentials: true
 };
 app.use(cors(corsOptions));
