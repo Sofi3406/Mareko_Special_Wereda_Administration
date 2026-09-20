@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const crypto = require('crypto');
+const Kebele = require('../models/Kebele');
 
 const sendTokenResponse = (user, statusCode, res, extra = {}) => {
   const token = user.getSignedJwtToken();
@@ -27,6 +28,7 @@ const sendTokenResponse = (user, statusCode, res, extra = {}) => {
       fullName: user.fullName,
       role: user.role,
       woreda: user.woreda,
+      kebele: user.kebele,
       department: user.department
     },
     ...extra
@@ -38,10 +40,13 @@ const sendTokenResponse = (user, statusCode, res, extra = {}) => {
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { email, password, fullName, phone, woreda } = req.body;
+    const { email, password, fullName, phone, kebele } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) return next(new ErrorResponse('User already exists', 400));
+
+    const selectedKebele = await Kebele.findOne({ _id: kebele, isActive: true });
+    if (!selectedKebele) return next(new ErrorResponse('Please select a valid kebele', 400));
 
     const user = await User.create({
       email,
@@ -49,7 +54,8 @@ exports.register = async (req, res, next) => {
       fullName,
       phone,
       role: 'resident',
-      woreda: woreda || 'Mareqo Wereda',
+      woreda: selectedKebele.woreda,
+      kebele: selectedKebele._id,
       isActive: true
     });
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { eventsAPI } from '../../services/api';
+import { eventsAPI, kebelesAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { getMediaUrl } from '../../utils/media';
@@ -35,12 +35,16 @@ const ManageEvents = () => {
   const [editing, setEditing] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEventLoading, setSelectedEventLoading] = useState(false);
+  const [kebeles, setKebeles] = useState([]);
   const [form, setForm] = useState({
     title: '',
     date: '',
     location: '',
     description: '',
     meetingLink: '',
+    scopeType: 'wereda',
+    kebele: '',
+    department: '',
     images: []
   });
 
@@ -59,7 +63,7 @@ const ManageEvents = () => {
   };
 
   const resetForm = () => {
-    setForm({ title: '', date: '', location: '', description: '', meetingLink: '', images: [] });
+    setForm({ title: '', date: '', location: '', description: '', meetingLink: '', scopeType: 'wereda', kebele: '', department: '', images: [] });
     setEditing(null);
   };
 
@@ -83,15 +87,23 @@ const ManageEvents = () => {
       toast.error('Please complete all required fields');
       return;
     }
+    if (form.scopeType === 'kebele' && !form.kebele) {
+      toast.error('Please select a kebele');
+      return;
+    }
+    if (form.scopeType === 'department' && !form.department) {
+      toast.error('Please select a department');
+      return;
+    }
 
     try {
-      const payload = buildEventFormData({ ...form, woreda: 'All Woredas' });
+      const payload = buildEventFormData({ ...form, woreda: 'Mareqo Wereda' });
       if (editing) {
         await eventsAPI.update(editing, payload);
         toast.success('Event updated successfully');
       } else {
         await eventsAPI.create(payload);
-        toast.success('City-wide event created successfully');
+        toast.success('Event created successfully');
       }
       resetForm();
       fetchEvents();
@@ -108,6 +120,9 @@ const ManageEvents = () => {
       location: event.location || '',
       description: event.description || '',
       meetingLink: event.meetingLink || '',
+      scopeType: event.scopeType || 'wereda',
+      kebele: event.kebele?._id || event.kebele || '',
+      department: event.department || '',
       images: []
     });
   };
@@ -164,6 +179,10 @@ const ManageEvents = () => {
     fetchEvents();
   }, [woredaFilter]);
 
+  useEffect(() => {
+    kebelesAPI.getAll().then((response) => setKebeles(response.data.data || [])).catch(() => {});
+  }, []);
+
   const formatOrganizer = (organizer) => {
     if (!organizer) return 'Admin';
     const roleLabel =
@@ -189,11 +208,11 @@ const ManageEvents = () => {
       <PortalHero
         eyebrow="Sub city calendar"
         title="Manage events"
-        description="Create city-wide events and review events published by woreda administrators. Click an event to view registrations."
+        description="Create Mareqo-wide, Kebele-wide, or department-wide events and review registrations."
       />
 
       <PortalFormPanel
-        title={editing ? 'Edit event' : 'Create city-wide event'}
+        title={editing ? 'Edit event' : 'Create event'}
         onSubmit={handleSubmit}
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -226,6 +245,33 @@ const ManageEvents = () => {
               onChange={(e) => setForm({ ...form, meetingLink: e.target.value })}
             />
           </PortalField>
+          <PortalField label="Audience scope">
+            <select
+              className="input mt-0"
+              value={form.scopeType}
+              onChange={(e) => setForm({ ...form, scopeType: e.target.value, kebele: '', department: '' })}
+            >
+              <option value="wereda">Mareqo Special Wereda</option>
+              <option value="kebele">Kebele</option>
+              <option value="department">Department</option>
+            </select>
+          </PortalField>
+          {form.scopeType === 'kebele' && (
+            <PortalField label="Kebele">
+              <select className="input mt-0" value={form.kebele} onChange={(e) => setForm({ ...form, kebele: e.target.value })}>
+                <option value="">Select kebele</option>
+                {kebeles.map((kebele) => <option key={kebele._id} value={kebele._id}>{kebele.name} ({kebele.code})</option>)}
+              </select>
+            </PortalField>
+          )}
+          {form.scopeType === 'department' && (
+            <PortalField label="Department">
+              <select className="input mt-0" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
+                <option value="">Select department</option>
+                {['Water', 'Road', 'Sanitation', 'Electricity', 'Health', 'Other'].map((department) => <option key={department} value={department}>{department}</option>)}
+              </select>
+            </PortalField>
+          )}
           <div className="md:col-span-2">
             <PortalField label="Event images">
               <div className="officer-file-drop">
@@ -258,7 +304,7 @@ const ManageEvents = () => {
         </div>
         <div className="flex flex-wrap gap-3">
           <PortalPrimaryButton type="submit">
-            {editing ? 'Update event' : 'Create city-wide event'}
+            {editing ? 'Update event' : 'Create event'}
           </PortalPrimaryButton>
           {editing && (
             <PortalOutlineButton type="button" onClick={resetForm}>

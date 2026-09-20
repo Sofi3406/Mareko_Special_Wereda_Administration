@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { usersAPI } from '../../services/api';
+import { usersAPI, kebelesAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import {
   PortalPage,
@@ -17,8 +17,9 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('all');
-  const [woredaFilter, setWoredaFilter] = useState('all');
-  const [woredaOptions, setWoredaOptions] = useState(['all']);
+  const [kebeleFilter, setKebeleFilter] = useState('all');
+  const [kebeleOptions, setKebeleOptions] = useState([]);
+  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -38,7 +39,8 @@ const UserManagement = () => {
     try {
       const params = {};
       if (roleFilter !== 'all') params.role = roleFilter;
-      if (woredaFilter !== 'all') params.woreda = woredaFilter;
+      if (kebeleFilter !== 'all') params.kebele = kebeleFilter;
+      if (departmentFilter !== 'all') params.department = departmentFilter;
       const response = await usersAPI.getAll(Object.keys(params).length ? params : undefined);
       setUsers(response.data.data || []);
     } catch (error) {
@@ -48,13 +50,10 @@ const UserManagement = () => {
     }
   };
 
-  const fetchWoredaOptions = async () => {
+  const fetchKebeleOptions = async () => {
     try {
-      const response = await usersAPI.getAll();
-      const woredas = [...new Set((response.data.data || []).map((user) => user.woreda).filter(Boolean))].sort(
-        (a, b) => a.localeCompare(b)
-      );
-      setWoredaOptions(['all', ...woredas]);
+      const response = await kebelesAPI.getAll();
+      setKebeleOptions(response.data.data || []);
     } catch {
       // Keep defaults if woreda list cannot be loaded.
     }
@@ -66,7 +65,7 @@ const UserManagement = () => {
       await usersAPI.delete(id);
       toast.success('User deleted successfully');
       fetchUsers();
-      fetchWoredaOptions();
+      fetchKebeleOptions();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Unable to delete user');
     }
@@ -156,7 +155,7 @@ const UserManagement = () => {
       toast.success('User updated successfully');
       handleCloseEdit();
       fetchUsers();
-      fetchWoredaOptions();
+      fetchKebeleOptions();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Unable to update user');
     }
@@ -171,12 +170,12 @@ const UserManagement = () => {
   };
 
   useEffect(() => {
-    fetchWoredaOptions();
+    fetchKebeleOptions();
   }, []);
 
   useEffect(() => {
     fetchUsers();
-  }, [roleFilter, woredaFilter]);
+  }, [roleFilter, kebeleFilter, departmentFilter]);
 
   const filteredUsers = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
@@ -233,16 +232,29 @@ const UserManagement = () => {
               <option value="resident">Resident</option>
             </select>
           </PortalField>
-          <PortalField label="Filter by woreda">
+          <PortalField label="Filter by kebele">
             <select
               className="input mt-0"
-              value={woredaFilter}
-              onChange={(e) => setWoredaFilter(e.target.value)}
+              value={kebeleFilter}
+              onChange={(e) => setKebeleFilter(e.target.value)}
             >
-              {woredaOptions.map((woreda) => (
-                <option key={woreda} value={woreda}>
-                  {woreda === 'all' ? 'All woredas' : woreda}
+              <option value="all">All kebeles</option>
+              {kebeleOptions.map((kebele) => (
+                <option key={kebele._id} value={kebele._id}>
+                  {kebele.name} ({kebele.code})
                 </option>
+              ))}
+            </select>
+          </PortalField>
+          <PortalField label="Filter by department">
+            <select
+              className="input mt-0"
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+            >
+              <option value="all">All departments</option>
+              {['Water', 'Road', 'Sanitation', 'Electricity', 'Health', 'Other'].map((department) => (
+                <option key={department} value={department}>{department}</option>
               ))}
             </select>
           </PortalField>

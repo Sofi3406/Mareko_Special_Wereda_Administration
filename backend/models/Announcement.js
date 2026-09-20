@@ -24,6 +24,16 @@ const announcementSchema = new mongoose.Schema({
   woreda: {
     type: String
   },
+  scopeType: {
+    type: String,
+    enum: ['wereda', 'kebele', 'department'],
+    default: 'wereda'
+  },
+  kebele: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Kebele'
+  },
+  department: String,
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -37,5 +47,6 @@ const announcementSchema = new mongoose.Schema({
 
 announcementSchema.index({ woreda: 1, createdAt: -1 });
 announcementSchema.index({ audienceRoles: 1 });
+announcementSchema.index({ scopeType: 1, kebele: 1, department: 1 });
 
 module.exports = mongoose.model('Announcement', announcementSchema);

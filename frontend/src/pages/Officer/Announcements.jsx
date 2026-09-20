@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { announcementsAPI } from '../../services/api';
+import { announcementsAPI, kebelesAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { getMediaUrl } from '../../utils/media';
 import {
@@ -9,11 +9,8 @@ import {
   OfficerEmpty,
   OfficerFormPanel,
   OfficerField,
-  OfficerPrimaryButton,
-  OfficerOutlineButton
+  OfficerPrimaryButton
 } from '../../components/officer/OfficerPageShell';
-
-const AUDIENCE_ROLES = ['resident', 'officer', 'woreda_admin', 'super_admin', 'all'];
 
 const formatAnnouncementTime = (value) => {
   const date = new Date(value);
@@ -28,11 +25,15 @@ const Announcements = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [kebeles, setKebeles] = useState([]);
   const [form, setForm] = useState({
     title: '',
     message: '',
     category: 'General',
     audienceRoles: ['all'],
+    scopeType: 'wereda',
+    kebele: '',
+    department: '',
     image: null
   });
 
@@ -54,6 +55,14 @@ const Announcements = () => {
       toast.error('Please fill in all required fields');
       return;
     }
+    if (form.scopeType === 'kebele' && !form.kebele) {
+      toast.error('Please select a kebele');
+      return;
+    }
+    if (form.scopeType === 'department' && !form.department) {
+      toast.error('Please select a department');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -62,13 +71,16 @@ const Announcements = () => {
       payload.append('message', form.message.trim());
       payload.append('category', form.category);
       payload.append('audienceRoles', form.audienceRoles.join(','));
+      payload.append('scopeType', form.scopeType);
+      if (form.kebele) payload.append('kebele', form.kebele);
+      if (form.department) payload.append('department', form.department);
       if (form.image) {
         payload.append('image', form.image);
       }
 
       await announcementsAPI.create(payload);
       toast.success('Announcement published');
-      setForm({ title: '', message: '', category: 'General', audienceRoles: ['all'], image: null });
+      setForm({ title: '', message: '', category: 'General', audienceRoles: ['all'], scopeType: 'wereda', kebele: '', department: '', image: null });
       fetchAnnouncements();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Unable to publish announcement');
@@ -88,17 +100,12 @@ const Announcements = () => {
     }
   };
 
-  const toggleAudience = (role) => {
-    setForm((prev) => {
-      if (prev.audienceRoles.includes(role)) {
-        return { ...prev, audienceRoles: prev.audienceRoles.filter((item) => item !== role) };
-      }
-      return { ...prev, audienceRoles: [...prev.audienceRoles, role] };
-    });
-  };
-
   useEffect(() => {
     fetchAnnouncements();
+  }, []);
+
+  useEffect(() => {
+    kebelesAPI.getAll().then((response) => setKebeles(response.data.data || [])).catch(() => {});
   }, []);
 
   return (
@@ -151,20 +158,33 @@ const Announcements = () => {
           )}
         </OfficerField>
 
-        <OfficerField label="Audience">
-          <div className="mt-1 flex flex-wrap gap-2">
-            {AUDIENCE_ROLES.map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => toggleAudience(role)}
-                className={`officer-audience-btn ${form.audienceRoles.includes(role) ? 'is-active' : ''}`}
-              >
-                {role.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
+        <OfficerField label="Audience scope">
+          <select
+            className="input mt-0"
+            value={form.scopeType}
+            onChange={(e) => setForm({ ...form, scopeType: e.target.value, kebele: '', department: '' })}
+          >
+            <option value="wereda">Mareqo Special Wereda</option>
+            <option value="kebele">Kebele</option>
+            <option value="department">Department</option>
+          </select>
         </OfficerField>
+        {form.scopeType === 'kebele' && (
+          <OfficerField label="Kebele">
+            <select className="input mt-0" value={form.kebele} onChange={(e) => setForm({ ...form, kebele: e.target.value })}>
+              <option value="">Select kebele</option>
+              {kebeles.map((kebele) => <option key={kebele._id} value={kebele._id}>{kebele.name} ({kebele.code})</option>)}
+            </select>
+          </OfficerField>
+        )}
+        {form.scopeType === 'department' && (
+          <OfficerField label="Department">
+            <select className="input mt-0" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
+              <option value="">Select department</option>
+              {['Water', 'Road', 'Sanitation', 'Electricity', 'Health', 'Other'].map((department) => <option key={department} value={department}>{department}</option>)}
+            </select>
+          </OfficerField>
+        )}
 
         <OfficerPrimaryButton type="submit" disabled={submitting}>
           {submitting ? 'Publishing…' : 'Publish announcement'}

@@ -1,4 +1,5 @@
 const Announcement = require('../models/Announcement');
+const Kebele = require('../models/Kebele');
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const sendEmail = require('../utils/emailService');
@@ -7,22 +8,20 @@ const { logAction } = require('./auditLogController');
 
 const resolveAudienceFilter = (user) => {
   if (!user) return {};
+  if (user.role === 'super_admin') return {};
 
   const roles = ['all', user.role];
   const woredaRegex = buildWoredaRegex(user.woreda);
-  const woredaFilter = user.woreda
-    ? {
-        $or: [
-          woredaRegex ? { woreda: { $regex: woredaRegex } } : { woreda: user.woreda },
-          { woreda: { $exists: false } },
-          { woreda: null }
-        ]
-      }
-    : {};
+  const scopeFilters = [
+    { scopeType: 'wereda', ...(woredaRegex ? { woreda: { $regex: woredaRegex } } : { woreda: user.woreda }) },
+    { scopeType: { $exists: false }, ...(woredaRegex ? { woreda: { $regex: woredaRegex } } : { woreda: user.woreda }) }
+  ];
+  if (user.kebele) scopeFilters.push({ scopeType: 'kebele', kebele: user.kebele });
+  if (user.department) scopeFilters.push({ scopeType: 'department', department: user.department });
 
   return {
     audienceRoles: { $in: roles },
-    ...woredaFilter
+    $or: scopeFilters
   };
 };
 
@@ -70,7 +69,7 @@ exports.getPublicAnnouncements = async (req, res, next) => {
 // @access  Private (Officer/Admin)
 exports.createAnnouncement = async (req, res, next) => {
   try {
-    const { title, message, category, audienceRoles, woreda } = req.body;
+    const { title, message, category, audienceRoles, woreda, scopeType = 'wereda', kebele, department } = req.body;
 
     if (!title || !message) {
       return next(new ErrorResponse('Please fill in all required fields', 400));
@@ -78,6 +77,17 @@ exports.createAnnouncement = async (req, res, next) => {
 
     if (!['officer', 'woreda_admin', 'super_admin'].includes(req.user.role)) {
       return next(new ErrorResponse('Not authorized', 403));
+    }
+    if (!['wereda', 'kebele', 'department'].includes(scopeType)) {
+      return next(new ErrorResponse('Invalid announcement scope', 400));
+    }
+    const announcementWoreda = req.user.woreda || 'Mareqo Wereda';
+    if (scopeType === 'kebele') {
+      const selectedKebele = await Kebele.findOne({ _id: kebele, woreda: announcementWoreda, isActive: true });
+      if (!selectedKebele) return next(new ErrorResponse('Please select a valid kebele in Mareqo Wereda', 400));
+    }
+    if (scopeType === 'department' && !department) {
+      return next(new ErrorResponse('Department is required for a department-wide announcement', 400));
     }
 
     const normalizedRoles = Array.isArray(audienceRoles)
@@ -92,7 +102,10 @@ exports.createAnnouncement = async (req, res, next) => {
       category: category || 'General',
       image: req.file ? req.file.path.replace(/\\/g, '/') : undefined,
       audienceRoles: normalizedRoles.length ? normalizedRoles : ['all'],
-      woreda: req.user.role === 'woreda_admin' ? req.user.woreda : woreda,
+      woreda: announcementWoreda,
+      scopeType,
+      kebele: scopeType === 'kebele' ? kebele : undefined,
+      department: scopeType === 'department' ? department : undefined,
       createdBy: req.user.id
     });
 
@@ -100,7 +113,11 @@ exports.createAnnouncement = async (req, res, next) => {
       role: { $in: normalizedRoles.includes('all') ? ['resident', 'officer', 'woreda_admin', 'super_admin'] : normalizedRoles }
     };
 
-    if (announcement.woreda) {
+    if (announcement.scopeType === 'kebele') {
+      recipientFilter.kebele = announcement.kebele;
+    } else if (announcement.scopeType === 'department') {
+      recipientFilter.department = announcement.department;
+    } else if (announcement.woreda) {
       const woredaRegex = buildWoredaRegex(announcement.woreda);
       recipientFilter.woreda = woredaRegex ? { $regex: woredaRegex } : announcement.woreda;
     }

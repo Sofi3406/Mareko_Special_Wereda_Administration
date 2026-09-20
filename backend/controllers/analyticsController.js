@@ -52,7 +52,7 @@ const getDateRange = (period) => {
 // @access  Private (Sub-City Admin)
 exports.getAnalytics = async (req, res, next) => {
   try {
-    const { period = 'monthly', woreda, year } = req.query;
+    const { period = 'monthly', kebele, year } = req.query;
 
     let dateRange;
     let filterYear = null;
@@ -75,9 +75,8 @@ exports.getAnalytics = async (req, res, next) => {
       createdAt: { $gte: dateRange.start, $lte: dateRange.end }
     };
     
-    if (woreda && woreda !== 'all') {
-      const woredaRegex = buildWoredaRegex(woreda);
-      matchConditions.woreda = woredaRegex ? { $regex: woredaRegex } : woreda;
+    if (kebele && kebele !== 'all') {
+      matchConditions.kebele = kebele;
     }
     
     // Execute all queries in parallel
@@ -87,7 +86,7 @@ exports.getAnalytics = async (req, res, next) => {
       reportsByCategory,
       reportsByMonth,
       userStats,
-      woredaPerformance,
+      kebelePerformance,
       departmentPerformance,
       recentReports,
       systemHealth
@@ -128,11 +127,11 @@ exports.getAnalytics = async (req, res, next) => {
         }}
       ]),
       
-      // Woreda performance
+      // Kebele performance
       Report.aggregate([
         { $match: matchConditions },
         { $group: {
-          _id: "$woreda",
+          _id: "$kebele",
           total: { $sum: 1 },
           resolved: { $sum: { $cond: [{ $eq: ["$status", "Resolved"] }, 1, 0] } },
           avgResolutionDays: {
@@ -145,9 +144,17 @@ exports.getAnalytics = async (req, res, next) => {
             }
           }
         }},
+        { $lookup: {
+          from: 'kebeles',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'kebeleDetails'
+        }},
+        { $unwind: { path: '$kebeleDetails', preserveNullAndEmptyArrays: true } },
         { $project: {
           _id: 0,
-          woreda: "$_id",
+          kebele: { $ifNull: ['$kebeleDetails.name', 'Unassigned'] },
+          kebeleId: '$_id',
           totalReports: "$total",
           resolvedReports: "$resolved",
           resolutionRate: { $multiply: [{ $divide: ["$resolved", "$total"] }, 100] },
@@ -232,7 +239,7 @@ exports.getAnalytics = async (req, res, next) => {
           [role._id + 's']: role.count
         }), {})
       },
-      woredaPerformance,
+      kebelePerformance,
       departmentPerformance,
       systemMetrics: {
         uptime: systemHealth.uptime,
@@ -260,7 +267,7 @@ exports.getAnalytics = async (req, res, next) => {
         reportsByCategory,
         trendData: formattedTrendData,
         userStats,
-        woredaPerformance,
+        kebelePerformance,
         departmentPerformance,
         recentReports,
         filterYear,

@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const Kebele = require('../models/Kebele');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const ErrorResponse = require('../utils/errorResponse');
@@ -14,6 +15,17 @@ const {
 
 const toWebPath = (filePath = '') => filePath.replace(/\\/g, '/');
 const SUBCITY_EVENT_WOREDA = 'All Woredas';
+const MAREQO_WEREDA = 'Mareqo Wereda';
+
+const buildEventAudienceFilter = (user) => {
+  if (!user || user.role === 'super_admin' || user.role === 'woreda_admin') return {};
+
+  const audience = [{ scopeType: 'wereda', woreda: user.woreda }];
+  if (user.kebele) audience.push({ scopeType: 'kebele', kebele: user.kebele });
+  if (user.department) audience.push({ scopeType: 'department', department: user.department });
+
+  return { $or: audience };
+};
 
 const applyEventWoredaFilter = (filter, woredaQuery) => {
   if (!woredaQuery || woredaQuery === 'all') {
@@ -131,6 +143,7 @@ exports.getEvents = async (req, res, next) => {
 
     let mongoFilter = Object.keys(reqQuery).length ? JSON.parse(queryStr) : {};
     mongoFilter = applyEventWoredaFilter(mongoFilter, woredaQuery);
+    mongoFilter = { ...mongoFilter, ...buildEventAudienceFilter(req.user) };
 
     query = Event.find(mongoFilter).populate('organizer', 'fullName email role');
 
@@ -350,13 +363,20 @@ exports.getEvent = async (req, res, next) => {
 exports.createEvent = async (req, res, next) => {
   try {
     req.body.organizer = req.user.id;
+    req.body.scopeType = req.body.scopeType || 'wereda';
+    req.body.woreda = req.body.woreda === SUBCITY_EVENT_WOREDA
+      ? MAREQO_WEREDA
+      : (req.body.woreda || req.user.woreda || MAREQO_WEREDA);
 
-    if (req.user.role === 'super_admin' && !req.body.woreda) {
-      req.body.woreda = 'All Woredas';
+    if (!['wereda', 'kebele', 'department'].includes(req.body.scopeType)) {
+      return next(new ErrorResponse('Invalid event scope', 400));
     }
-
-    if (!req.body.woreda && req.user.woreda) {
-      req.body.woreda = req.user.woreda;
+    if (req.body.scopeType === 'kebele') {
+      const kebele = await Kebele.findOne({ _id: req.body.kebele, woreda: req.body.woreda, isActive: true });
+      if (!kebele) return next(new ErrorResponse('Please select a valid kebele in Mareqo Wereda', 400));
+    }
+    if (req.body.scopeType === 'department' && !req.body.department) {
+      return next(new ErrorResponse('Department is required for a department-wide event', 400));
     }
 
     if (req.files && req.files.length > 0) {
@@ -372,7 +392,11 @@ exports.createEvent = async (req, res, next) => {
         isActive: true
       };
 
-      if (event.woreda && event.woreda !== 'All Woredas') {
+      if (event.scopeType === 'kebele') {
+        recipientQuery.kebele = event.kebele;
+      } else if (event.scopeType === 'department') {
+        recipientQuery.department = event.department;
+      } else if (event.woreda) {
         const woredaRegex = buildWoredaRegex(event.woreda);
         recipientQuery = {
           ...recipientQuery,
@@ -392,7 +416,10 @@ exports.createEvent = async (req, res, next) => {
           message: `New event published: ${event.title}`,
           metadata: {
             eventId: event._id,
-            woreda: event.woreda
+            woreda: event.woreda,
+            scopeType: event.scopeType,
+            kebele: event.kebele,
+            department: event.department
           }
         }));
 

@@ -20,13 +20,17 @@ exports.getUsers = async (req, res, next) => {
 
     if (req.query.role) query.role = req.query.role;
     if (req.query.department) query.department = req.query.department;
+    if (req.query.kebele) query.kebele = req.query.kebele;
 
     if (req.user.role === 'super_admin' && req.query.woreda && req.query.woreda !== 'all') {
       const woredaRegex = buildWoredaRegex(req.query.woreda);
       query.woreda = woredaRegex ? { $regex: woredaRegex } : req.query.woreda;
     }
 
-    const users = await User.find(query).select('-password').sort('-createdAt');
+    const users = await User.find(query)
+      .select('-password')
+      .populate('kebele', 'name code woreda')
+      .sort('-createdAt');
 
     res.status(200).json({ success: true, count: users.length, data: users });
   } catch (err) {

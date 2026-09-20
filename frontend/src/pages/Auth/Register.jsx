@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Layout/Navbar';
 import { MAREQO_WEREDA } from '../../utils/woredas';
+import { kebelesAPI } from '../../services/api';
 
 const Register = () => {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const [kebeles, setKebeles] = useState([]);
 
   const {
     register,
@@ -17,6 +19,10 @@ const Register = () => {
   } = useForm({
     defaultValues: { role: 'resident' }
   });
+
+  useEffect(() => {
+    kebelesAPI.getAll().then((response) => setKebeles(response.data.data || [])).catch(() => {});
+  }, []);
 
   const onSubmit = async (data) => {
     if (data.password !== data.confirmPassword) {
@@ -30,7 +36,7 @@ const Register = () => {
       password: data.password,
       phone: data.phone || undefined,
       role: 'resident',
-      woreda: MAREQO_WEREDA
+      kebele: data.kebele
     };
 
     try {
@@ -103,6 +109,22 @@ const Register = () => {
                   className="input mt-1"
                   {...register('phone')}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Kebele</label>
+                <select
+                  className="input mt-1"
+                  {...register('kebele', { required: 'Please select your kebele' })}
+                >
+                  <option value="">Select your kebele</option>
+                  {kebeles.map((kebele) => (
+                    <option key={kebele._id} value={kebele._id}>
+                      {kebele.name} ({kebele.code})
+                    </option>
+                  ))}
+                </select>
+                {errors.kebele && <p className="mt-1 text-sm text-red-600">{errors.kebele.message}</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

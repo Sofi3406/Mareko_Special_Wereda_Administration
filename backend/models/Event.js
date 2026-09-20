@@ -25,6 +25,16 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  scopeType: {
+    type: String,
+    enum: ['wereda', 'kebele', 'department'],
+    default: 'wereda'
+  },
+  kebele: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Kebele'
+  },
+  department: String,
   category: String,
   attendees: [{
     type: mongoose.Schema.Types.ObjectId,

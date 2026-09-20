@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -14,7 +14,7 @@ import {
   XAxis,
   YAxis
 } from 'recharts';
-import { analyticsAPI } from '../../services/api';
+import { analyticsAPI, kebelesAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { CHART_PALETTE, getPaletteColor } from '../../utils/chartColors';
 import {
@@ -36,7 +36,8 @@ const RESOLVED_SERIES_COLOR = '#16a34a';
 const AnalyticsDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [selectedYear, setSelectedYear] = useState(defaultReportYear);
-  const [selectedWoreda, setSelectedWoreda] = useState('all');
+  const [selectedKebele, setSelectedKebele] = useState('all');
+  const [kebeles, setKebeles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [realtimeData, setRealtimeData] = useState(null);
 
@@ -45,7 +46,7 @@ const AnalyticsDashboard = () => {
     try {
       const response = await analyticsAPI.getDashboard({
         year: selectedYear,
-        woreda: selectedWoreda
+        kebele: selectedKebele
       });
       setAnalytics(response.data.data);
     } catch (error) {
@@ -66,7 +67,7 @@ const AnalyticsDashboard = () => {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [selectedYear, selectedWoreda]);
+  }, [selectedYear, selectedKebele]);
 
   useEffect(() => {
     fetchRealtimeData();
@@ -74,12 +75,9 @@ const AnalyticsDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const woredaOptions = useMemo(() => {
-    const fromPerformance = (analytics?.woredaPerformance || [])
-      .map((item) => item.woreda)
-      .filter(Boolean);
-    return ['all', ...new Set(fromPerformance)];
-  }, [analytics]);
+  useEffect(() => {
+    kebelesAPI.getAll().then((response) => setKebeles(response.data.data || [])).catch(() => {});
+  }, []);
 
   const summary = analytics?.summary || {};
 
@@ -126,15 +124,16 @@ const AnalyticsDashboard = () => {
               ))}
             </select>
           </PortalField>
-          <PortalField label="Woreda">
+          <PortalField label="Kebele">
             <select
               className="input mt-0"
-              value={selectedWoreda}
-              onChange={(e) => setSelectedWoreda(e.target.value)}
+              value={selectedKebele}
+              onChange={(e) => setSelectedKebele(e.target.value)}
             >
-              {woredaOptions.map((woreda) => (
-                <option key={woreda} value={woreda}>
-                  {woreda === 'all' ? 'All woredas' : woreda}
+              <option value="all">All kebeles</option>
+              {kebeles.map((kebele) => (
+                <option key={kebele._id} value={kebele._id}>
+                  {kebele.name} ({kebele.code})
                 </option>
               ))}
             </select>
@@ -256,27 +255,27 @@ const AnalyticsDashboard = () => {
             </div>
 
             <div className="officer-chart-panel">
-              <h2 className="officer-chart-panel__title">Woreda performance</h2>
-              {(analytics?.woredaPerformance || []).length === 0 ? (
-                <p className="mt-4 text-sm text-slate-500">No woreda data yet.</p>
+              <h2 className="officer-chart-panel__title">Kebele performance</h2>
+              {(analytics?.kebelePerformance || []).length === 0 ? (
+                <p className="mt-4 text-sm text-slate-500">No Kebele data yet.</p>
               ) : (
                 <div className="mt-4 h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={analytics.woredaPerformance}>
+                    <BarChart data={analytics.kebelePerformance}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#fde68a" />
-                      <XAxis dataKey="woreda" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="kebele" tick={{ fontSize: 11 }} />
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="totalReports" name="Total reports" radius={[4, 4, 0, 0]}>
-                        {analytics.woredaPerformance.map((entry, index) => (
-                          <Cell key={`reports-${entry.woreda || index}`} fill={getPaletteColor(index)} />
+                        {analytics.kebelePerformance.map((entry, index) => (
+                          <Cell key={`reports-${entry.kebele || index}`} fill={getPaletteColor(index)} />
                         ))}
                       </Bar>
                       <Bar dataKey="resolutionRate" name="Resolution %" radius={[4, 4, 0, 0]}>
-                        {analytics.woredaPerformance.map((entry, index) => (
+                        {analytics.kebelePerformance.map((entry, index) => (
                           <Cell
-                            key={`rate-${entry.woreda || index}`}
+                            key={`rate-${entry.kebele || index}`}
                             fill={getPaletteColor(index + 3)}
                           />
                         ))}

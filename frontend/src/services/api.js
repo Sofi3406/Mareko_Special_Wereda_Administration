@@ -74,6 +74,13 @@ export const usersAPI = {
   getByRole: (role) => api.get(`/users/role/${role}`)
 };
 
+export const kebelesAPI = {
+  getAll: (params) => api.get('/kebeles', { params }),
+  getOne: (id) => api.get(`/kebeles/${id}`),
+  create: (data) => api.post('/kebeles', data),
+  update: (id, data) => api.put(`/kebeles/${id}`, data)
+};
+
 // Analytics API
 export const analyticsAPI = {
   getDashboard: (params) => api.get('/analytics', { params }),
