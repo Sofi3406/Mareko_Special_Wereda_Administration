@@ -294,6 +294,18 @@
   padding: 1.25rem 1.35rem;
 }
 
+.officer-panel__body--table {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+.officer-panel__body--table .officer-table-wrap {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .officer-form-panel {
   border-radius: 1.25rem;
   border: 1px solid rgba(251, 191, 36, 0.35);
@@ -562,11 +574,68 @@
 }
 
 .officer-table-wrap {
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   border-radius: 1.25rem;
   border: 1px solid #e2e8f0;
   background: #fff;
   box-shadow: 0 4px 16px -6px rgba(15, 23, 42, 0.1);
+}
+
+.officer-user-card {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 1rem 1.1rem;
+}
+
+.officer-user-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+@media (min-width: 480px) {
+  .officer-user-card__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .officer-user-card__actions .officer-btn {
+    flex: 1 1 auto;
+    min-width: 7rem;
+  }
+}
+
+.officer-rule-card {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 1rem 1.1rem;
+}
+
+.officer-rule-card dl {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.officer-rule-card dt {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #92400e;
+}
+
+.officer-rule-card dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  color: #475569;
 }
 
 .officer-table {

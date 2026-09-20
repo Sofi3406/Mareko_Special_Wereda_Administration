@@ -191,6 +191,25 @@ const UserManagement = () => {
     );
   }, [users, searchTerm]);
 
+  const renderUserActions = (user) => (
+    <>
+      <button
+        type="button"
+        onClick={() => handleOpenEdit(user)}
+        className="officer-btn officer-btn--outline w-full sm:w-auto"
+      >
+        Edit / change role
+      </button>
+      <button
+        type="button"
+        onClick={() => handleDelete(user._id)}
+        className="officer-btn officer-btn--danger-outline w-full sm:w-auto"
+      >
+        Delete
+      </button>
+    </>
+  );
+
   return (
     <PortalPage>
       <PortalHero
@@ -244,59 +263,80 @@ const UserManagement = () => {
         ) : filteredUsers.length === 0 ? (
           <PortalEmpty message="No users found for the selected filters." />
         ) : (
-          <div className="officer-table-wrap overflow-x-auto">
-            <table className="officer-table min-w-[900px]">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Woreda</th>
-                  <th>Department</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user._id}>
-                    <td>{user.fullName}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <span className="officer-chip">{roleLabel(user.role)}</span>
-                    </td>
-                    <td>{user.woreda || '—'}</td>
-                    <td>{user.department || '—'}</td>
-                    <td>
-                      <span
-                        className={`officer-status ${
-                          user.isActive ? 'officer-status--resolved' : 'officer-status--pending'
-                        }`}
-                      >
-                        {user.isActive ? 'Active' : 'Pending'}
-                      </span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(user)}
-                        className="officer-btn officer-btn--outline mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(user._id)}
-                        className="officer-btn officer-btn--danger-outline"
-                      >
-                        Delete
-                      </button>
-                    </td>
+          <>
+            <div className="space-y-3 md:hidden">
+              {filteredUsers.map((user) => (
+                <article key={user._id} className="officer-user-card">
+                  <p className="text-base font-semibold text-slate-900">{user.fullName}</p>
+                  <p className="mt-1 break-all text-sm text-slate-600">{user.email}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="officer-chip">{roleLabel(user.role)}</span>
+                    <span
+                      className={`officer-status ${
+                        user.isActive ? 'officer-status--resolved' : 'officer-status--pending'
+                      }`}
+                    >
+                      {user.isActive ? 'Active' : 'Pending'}
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Woreda</dt>
+                      <dd className="mt-0.5 text-slate-800">{user.woreda || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Department</dt>
+                      <dd className="mt-0.5 text-slate-800">{user.department || '—'}</dd>
+                    </div>
+                  </dl>
+                  <div className="officer-user-card__actions">{renderUserActions(user)}</div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden md:block officer-table-wrap">
+              <table className="officer-table min-w-[900px]">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Woreda</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user._id}>
+                      <td>{user.fullName}</td>
+                      <td className="max-w-[12rem] truncate" title={user.email}>
+                        {user.email}
+                      </td>
+                      <td>
+                        <span className="officer-chip">{roleLabel(user.role)}</span>
+                      </td>
+                      <td>{user.woreda || '—'}</td>
+                      <td>{user.department || '—'}</td>
+                      <td>
+                        <span
+                          className={`officer-status ${
+                            user.isActive ? 'officer-status--resolved' : 'officer-status--pending'
+                          }`}
+                        >
+                          {user.isActive ? 'Active' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap">
+                        <div className="flex flex-wrap justify-end gap-2">{renderUserActions(user)}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </PortalPanel>
 

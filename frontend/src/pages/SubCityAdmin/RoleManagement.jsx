@@ -85,6 +85,13 @@ const ROLES = [
   }
 ];
 
+const ASSIGNMENT_RULES = [
+  { role: 'System Admin', canCreate: 'Woreda Admins', scope: 'Platform-wide' },
+  { role: 'Woreda Admin', canCreate: 'Department Officers', scope: 'Their woreda only' },
+  { role: 'Officer', canCreate: '—', scope: 'Their department only' },
+  { role: 'Resident', canCreate: 'Self-registration', scope: 'Their own data only' }
+];
+
 const RoleManagement = () => {
   const [expanded, setExpanded] = useState(null);
 
@@ -109,16 +116,16 @@ const RoleManagement = () => {
                 {/* Header row */}
                 <button
                   type="button"
-                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition-colors"
+                  className="flex w-full flex-col items-stretch gap-2 px-4 py-4 text-left transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between sm:px-5"
                   onClick={() => setExpanded(expanded === role.key ? null : role.key)}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-semibold ${role.color}`}>
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <span className={`inline-flex w-fit items-center rounded-full border px-3 py-0.5 text-xs font-semibold ${role.color}`}>
                       {role.label}
                     </span>
-                    <span className="text-sm text-slate-500 hidden sm:block">{role.description}</span>
+                    <span className="text-sm text-slate-500 sm:line-clamp-1">{role.description}</span>
                   </div>
-                  <span className="text-slate-400 text-sm ml-4 shrink-0">
+                  <span className="shrink-0 text-sm text-slate-400 sm:ml-4">
                     {expanded === role.key ? '▲ Hide' : '▼ Show'} permissions
                   </span>
                 </button>
@@ -144,7 +151,29 @@ const RoleManagement = () => {
       </PortalPanel>
 
       <PortalPanel title="Role assignment rules">
-        <div className="officer-table-wrap overflow-x-auto">
+        <p className="mb-4 text-sm text-slate-600 md:hidden">
+          To change a user&apos;s role, open <strong>User management</strong> and use Edit on their account.
+        </p>
+
+        <div className="space-y-3 md:hidden">
+          {ASSIGNMENT_RULES.map((rule) => (
+            <article key={rule.role} className="officer-rule-card">
+              <span className="officer-chip">{rule.role}</span>
+              <dl className="mt-3">
+                <div>
+                  <dt>Can create</dt>
+                  <dd>{rule.canCreate}</dd>
+                </div>
+                <div>
+                  <dt>Scope</dt>
+                  <dd>{rule.scope}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+
+        <div className="hidden md:block officer-table-wrap">
           <table className="officer-table min-w-[560px]">
             <thead>
               <tr>
@@ -154,26 +183,15 @@ const RoleManagement = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td><span className="officer-chip">System Admin</span></td>
-                <td>Woreda Admins</td>
-                <td>Platform-wide</td>
-              </tr>
-              <tr>
-                <td><span className="officer-chip">Woreda Admin</span></td>
-                <td>Department Officers</td>
-                <td>Their woreda only</td>
-              </tr>
-              <tr>
-                <td><span className="officer-chip">Officer</span></td>
-                <td>—</td>
-                <td>Their department only</td>
-              </tr>
-              <tr>
-                <td><span className="officer-chip">Resident</span></td>
-                <td>Self-registration</td>
-                <td>Their own data only</td>
-              </tr>
+              {ASSIGNMENT_RULES.map((rule) => (
+                <tr key={rule.role}>
+                  <td>
+                    <span className="officer-chip">{rule.role}</span>
+                  </td>
+                  <td>{rule.canCreate}</td>
+                  <td>{rule.scope}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
