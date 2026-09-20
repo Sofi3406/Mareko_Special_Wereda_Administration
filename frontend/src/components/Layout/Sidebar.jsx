@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSidebarLayout } from '../../context/SidebarLayoutContext';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -19,10 +21,28 @@ import {
   FolderIcon
 } from '@heroicons/react/24/outline';
 
-const SidebarShell = ({ title, subtitle, children, onLogout }) => (
-  <div className="w-64 bg-stone-900 text-amber-50 h-full flex flex-col border-r border-amber-900/30 overflow-y-auto">
+const SidebarShell = ({ title, subtitle, children, onLogout }) => {
+  const sidebarLayout = useSidebarLayout();
+
+  const handleLogout = () => {
+    sidebarLayout?.close();
+    onLogout();
+  };
+
+  return (
+  <div className="relative w-64 max-w-[85vw] bg-stone-900 text-amber-50 h-full flex flex-col border-r border-amber-900/30 overflow-y-auto">
+    {sidebarLayout && (
+      <button
+        type="button"
+        onClick={sidebarLayout.close}
+        className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-amber-100/80 hover:bg-stone-800 hover:text-amber-50 lg:hidden"
+        aria-label="Close menu"
+      >
+        <XMarkIcon className="h-6 w-6" />
+      </button>
+    )}
     {title && (
-      <div className="px-4 pt-4 pb-2 border-b border-amber-900/20">
+      <div className="px-4 pt-4 pb-2 pr-12 border-b border-amber-900/20 lg:pr-4">
         <h2 className="text-xs font-bold uppercase tracking-widest text-amber-300">{title}</h2>
         {subtitle && <p className="text-xs text-amber-100/50 mt-0.5">{subtitle}</p>}
       </div>
@@ -33,7 +53,7 @@ const SidebarShell = ({ title, subtitle, children, onLogout }) => (
     <div className="px-2 pb-4 pt-2 border-t border-amber-900/20">
       <button
         type="button"
-        onClick={onLogout}
+        onClick={handleLogout}
         className="group flex w-full items-center px-3 py-2 text-sm font-semibold rounded-md text-red-300 hover:bg-red-700/80 hover:text-white"
       >
         <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
@@ -41,11 +61,16 @@ const SidebarShell = ({ title, subtitle, children, onLogout }) => (
       </button>
     </div>
   </div>
-);
+  );
+};
 
-const NavItem = ({ to, icon: Icon, label }) => (
+const NavItem = ({ to, icon: Icon, label }) => {
+  const sidebarLayout = useSidebarLayout();
+
+  return (
   <NavLink
     to={to}
+    onClick={() => sidebarLayout?.close()}
     className={({ isActive }) =>
       `group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
         isActive
@@ -57,7 +82,8 @@ const NavItem = ({ to, icon: Icon, label }) => (
     <Icon className="mr-3 h-5 w-5 shrink-0" />
     {label}
   </NavLink>
-);
+  );
+};
 
 const NavGroup = ({ label }) => (
   <p className="mt-4 mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-amber-500/60">

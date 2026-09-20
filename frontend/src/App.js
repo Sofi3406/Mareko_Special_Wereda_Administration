@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { SidebarLayoutProvider, useSidebarLayout } from './context/SidebarLayoutContext';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -93,6 +94,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 const Layout = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
+  const sidebarLayout = useSidebarLayout();
 
   const compactPrefixes = ['/resident', '/officer', '/kebele-admin', '/woreda-admin', '/subcity-admin'];
   const compactRoles = new Set(['resident', 'officer', 'kebele_admin', 'woreda_admin', 'super_admin']);
@@ -104,13 +106,34 @@ const Layout = ({ children }) => {
   const isResidentShared = user?.role === 'resident' && residentShared.has(location.pathname);
   const compact = isRoleSection || isCompactShared || isResidentShared;
 
+  useEffect(() => {
+    sidebarLayout?.close();
+  }, [location.pathname]); // close sidebar on route change (mobile drawer)
+
   if (!user) return children;
+
+  const sidebarOpen = sidebarLayout?.isOpen;
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
+          aria-label="Close menu"
+          onClick={sidebarLayout.close}
+        />
+      )}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 flex shrink-0 transition-transform duration-200 ease-out lg:static lg:z-auto lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <Sidebar />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Navbar />
-        <main className={`flex-1 overflow-y-auto p-6 ${compact ? 'pb-2' : ''}`}>
+        <main className={`flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 ${compact ? 'pb-2' : ''}`}>
           {children}
         </main>
         <Footer compact={compact} />
@@ -123,6 +146,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <SidebarLayoutProvider>
         <Toaster position="top-right" />
         <Routes>
           {/* Public */}
@@ -261,6 +285,7 @@ function App() {
           <Route path="/profile/edit" element={<ProtectedRoute><Layout><EditProfile /></Layout></ProtectedRoute>} />
         </Routes>
         <ResidentChatbotWidget />
+        </SidebarLayoutProvider>
       </AuthProvider>
     </Router>
   );

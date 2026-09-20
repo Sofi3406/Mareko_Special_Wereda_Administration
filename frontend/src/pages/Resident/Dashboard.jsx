@@ -110,15 +110,15 @@ const Dashboard = () => {
   const recentReports = useMemo(() => reports.slice(0, 3), [reports]);
 
   return (
-    <div className="space-y-8">
-      <div className="relative overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-950 via-amber-900 to-orange-800 px-6 py-8 text-white shadow-xl md:px-8">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="relative overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-950 via-amber-900 to-orange-800 px-4 py-6 text-white shadow-xl sm:px-6 sm:py-8 md:px-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.24),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.18),transparent_30%)]" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-100">
               Resident dashboard
             </p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl md:text-5xl">
               Welcome back{user?.fullName ? `, ${user.fullName}` : ''}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-amber-50/85 md:text-base">
@@ -128,7 +128,7 @@ const Dashboard = () => {
 
           <Link
             to="/resident/reports/new"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-amber-950 shadow-lg shadow-amber-950/20 transition-transform hover:-translate-y-0.5 hover:bg-amber-50"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-amber-950 shadow-lg shadow-amber-950/20 transition-transform hover:-translate-y-0.5 hover:bg-amber-50 sm:w-auto"
           >
             Report an issue
           </Link>
@@ -157,8 +157,8 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-3xl border border-amber-100 bg-white p-6 shadow-lg shadow-amber-50">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="rounded-3xl border border-amber-100 bg-white p-4 shadow-lg shadow-amber-50 sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Community pulse</p>
               <h2 className="mt-2 text-xl font-semibold text-slate-900">Public updates</h2>
@@ -206,8 +206,8 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="rounded-3xl border border-amber-100 bg-white p-6 shadow-lg shadow-amber-50">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="rounded-3xl border border-amber-100 bg-white p-4 shadow-lg shadow-amber-50 sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Your activity</p>
               <h2 className="mt-2 text-xl font-semibold text-slate-900">Recent reports</h2>
@@ -253,14 +253,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-amber-100 bg-white p-6 shadow-lg shadow-amber-50">
+      <div className="rounded-3xl border border-amber-100 bg-white p-4 shadow-lg shadow-amber-50 sm:p-6">
         <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Community calendar</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">Upcoming events</h2>
           </div>
           <div className="flex flex-wrap items-end gap-3">
-            <div className="min-w-[200px]">
+            <div className="w-full min-w-0 sm:min-w-[200px] sm:w-auto">
               <EventWoredaFilter
                 value={eventWoredaFilter}
                 onChange={(e) => setEventWoredaFilter(e.target.value)}
@@ -303,8 +303,8 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl border border-amber-100 bg-white p-6 shadow-lg shadow-amber-50">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="rounded-3xl border border-amber-100 bg-white p-4 shadow-lg shadow-amber-50 sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Community noticeboard</p>
               <h2 className="mt-2 text-xl font-semibold text-slate-900">Latest announcements</h2>
@@ -349,8 +349,8 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="rounded-3xl border border-amber-100 bg-white p-6 shadow-lg shadow-amber-50">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="rounded-3xl border border-amber-100 bg-white p-4 shadow-lg shadow-amber-50 sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Library</p>
               <h2 className="mt-2 text-xl font-semibold text-slate-900">Recent resources</h2>

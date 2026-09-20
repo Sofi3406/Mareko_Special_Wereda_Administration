@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSidebarLayout } from '../../context/SidebarLayoutContext';
 import { io } from 'socket.io-client';
 import { API_BASE, notificationsAPI } from '../../services/api';
 import {
@@ -16,6 +17,7 @@ const Navbar = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const { user, logout } = useAuth();
+  const sidebarLayout = useSidebarLayout();
   const navigate = useNavigate();
   const location = useLocation();
   const profileMenuRef = useRef(null);
@@ -378,23 +380,52 @@ const Navbar = () => {
             )}
           </div>
           
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-            >
-              {isOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" />
-              )}
-            </button>
+          <div className="md:hidden flex items-center gap-1">
+            {user && sidebarLayout && (
+              <>
+              <Link
+                to="/profile"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                aria-label="Profile"
+              >
+                <UserCircleIcon className="h-6 w-6" />
+              </Link>
+              <button
+                type="button"
+                onClick={sidebarLayout.toggle}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                aria-expanded={sidebarLayout.isOpen}
+                aria-label={sidebarLayout.isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              >
+                {sidebarLayout.isOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
+              </button>
+              </>
+            )}
+            {!user && (
+              <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                aria-expanded={isOpen}
+                aria-label="Open menu"
+              >
+                {isOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
       
-      {/* Mobile menu */}
-      {isOpen && (
+      {/* Mobile menu (guest / public only — signed-in users use sidebar drawer) */}
+      {!user && isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {user && (

@@ -26,10 +26,10 @@ const StatCard = ({ label, value, sub, color = 'amber' }) => {
     slate: 'border-slate-200 bg-slate-50'
   };
   return (
-    <div className={`rounded-xl border p-5 ${colors[color] || colors.amber}`}>
+    <div className={`rounded-xl border p-4 sm:p-5 ${colors[color] || colors.amber}`}>
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-      <p className="mt-2 text-4xl font-bold text-slate-900">{value ?? '—'}</p>
-      {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
+      <p className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{value ?? '—'}</p>
+      {sub && <p className="mt-1 text-xs text-slate-500 break-words">{sub}</p>}
     </div>
   );
 };
@@ -126,18 +126,20 @@ const Dashboard = () => {
               {deptData.length === 0 ? (
                 <p className="mt-4 text-sm text-slate-500">No data yet.</p>
               ) : (
-                <div className="mt-4 h-64">
+                <div className="mt-4 -mx-1 overflow-x-auto px-1">
+                  <div className="h-64 min-w-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deptData} layout="vertical" margin={{ left: 16, right: 16 }}>
+                    <BarChart data={deptData} layout="vertical" margin={{ left: 8, right: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#fde68a" />
                       <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                      <YAxis type="category" dataKey="department" tick={{ fontSize: 11 }} width={100} />
+                      <YAxis type="category" dataKey="department" tick={{ fontSize: 10 }} width={72} />
                       <Tooltip />
                       <Bar dataKey="count" name="Requests" radius={[0, 4, 4, 0]}>
                         {deptData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 </div>
               )}
             </div>
@@ -148,18 +150,20 @@ const Dashboard = () => {
               {kebeleData.length === 0 ? (
                 <p className="mt-4 text-sm text-slate-500">No data yet.</p>
               ) : (
-                <div className="mt-4 h-64">
+                <div className="mt-4 -mx-1 overflow-x-auto px-1">
+                  <div className="h-64 min-w-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={kebeleData} layout="vertical" margin={{ left: 16, right: 16 }}>
+                    <BarChart data={kebeleData} layout="vertical" margin={{ left: 8, right: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#fde68a" />
                       <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                      <YAxis type="category" dataKey="kebele" tick={{ fontSize: 11 }} width={80} />
+                      <YAxis type="category" dataKey="kebele" tick={{ fontSize: 10 }} width={64} />
                       <Tooltip />
                       <Bar dataKey="count" name="Issues" radius={[0, 4, 4, 0]}>
                         {kebeleData.map((_, i) => <Cell key={i} fill={PALETTE[(i + 3) % PALETTE.length]} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 </div>
               )}
             </div>
@@ -174,12 +178,12 @@ const Dashboard = () => {
                 ) : (
                   <ul className="divide-y divide-slate-100">
                     {activity.map((item, i) => (
-                      <li key={i} className="flex items-start gap-3 py-3">
-                        <span className="text-lg shrink-0">{activityIcon(item.type)}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-slate-800">{item.label}</p>
+                      <li key={i} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:gap-3">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <span className="text-lg shrink-0">{activityIcon(item.type)}</span>
+                          <p className="min-w-0 flex-1 text-sm text-slate-800">{item.label}</p>
                         </div>
-                        <span className="text-xs text-slate-400 shrink-0 whitespace-nowrap">{timeAgo(item.time)}</span>
+                        <span className="pl-8 text-xs text-slate-400 sm:shrink-0 sm:pl-0 sm:whitespace-nowrap">{timeAgo(item.time)}</span>
                       </li>
                     ))}
                   </ul>

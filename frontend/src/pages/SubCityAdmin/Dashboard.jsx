@@ -21,10 +21,10 @@ const StatCard = ({ label, value, sub, color = 'amber' }) => {
     indigo: 'border-indigo-200 bg-indigo-50'
   };
   return (
-    <div className={`rounded-xl border p-5 ${colors[color] || colors.amber}`}>
+    <div className={`rounded-xl border p-4 sm:p-5 ${colors[color] || colors.amber}`}>
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-      <p className="mt-2 text-4xl font-bold text-slate-900">{value ?? '—'}</p>
-      {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
+      <p className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{value ?? '—'}</p>
+      {sub && <p className="mt-1 text-xs text-slate-500 break-words">{sub}</p>}
     </div>
   );
 };
@@ -75,7 +75,7 @@ const SystemAdminDashboard = () => {
           {/* Users row */}
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Users</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               <StatCard label="Total Users" value={u.total?.toLocaleString()} color="blue" />
               <StatCard label="Residents" value={u.residents?.toLocaleString()} color="slate" />
               <StatCard label="Officers" value={u.officers?.toLocaleString()} color="slate" />
@@ -88,7 +88,7 @@ const SystemAdminDashboard = () => {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div>
               <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Community Issues</p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <StatCard label="Total" value={r.total?.toLocaleString()} color="amber" />
                 <StatCard label="Pending" value={r.pending?.toLocaleString()} color="red" />
                 <StatCard label="Resolved" value={r.resolved?.toLocaleString()} color="green" />
@@ -96,7 +96,7 @@ const SystemAdminDashboard = () => {
             </div>
             <div>
               <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Service Requests</p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <StatCard label="Total" value={sr.total?.toLocaleString()} color="indigo" />
                 <StatCard label="Pending" value={sr.pending?.toLocaleString()} color="red" />
                 <StatCard label="Resolved" value={sr.resolved?.toLocaleString()} color="green" />
@@ -105,7 +105,7 @@ const SystemAdminDashboard = () => {
           </div>
 
           {/* Departments + Kebeles + Events */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Departments" value={d.total?.toLocaleString()} sub={`${d.active || 0} active`} color="amber" />
             <StatCard label="Kebeles" value={k.total?.toLocaleString()} sub={`${k.active || 0} active`} color="amber" />
             <StatCard label="Events" value={stats?.events?.total?.toLocaleString()} color="slate" />

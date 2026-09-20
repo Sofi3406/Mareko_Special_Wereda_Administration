@@ -23,9 +23,9 @@ const StatCard = ({ label, value, color = 'amber' }) => {
     slate: 'border-slate-200 bg-slate-50'
   };
   return (
-    <div className={`rounded-xl border p-5 ${colors[color]}`}>
+    <div className={`rounded-xl border p-4 sm:p-5 ${colors[color]}`}>
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-      <p className="mt-2 text-4xl font-bold text-slate-900">{value ?? '—'}</p>
+      <p className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{value ?? '—'}</p>
     </div>
   );
 };
@@ -86,7 +86,7 @@ const KebeleAdminDashboard = () => {
         <PortalLoading />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Residents" value={residents.toLocaleString()} color="blue" />
             <StatCard label="Community Issues" value={reports.length.toLocaleString()} color="amber" />
             <StatCard label="Pending Issues" value={pending.toLocaleString()} color="red" />

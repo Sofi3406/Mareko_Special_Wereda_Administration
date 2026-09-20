@@ -88,9 +88,28 @@
 
 .officer-hero__actions {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 0.65rem;
   flex-shrink: 0;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .officer-hero__actions {
+    flex-direction: row;
+    width: auto;
+  }
+}
+
+.officer-hero__actions .officer-btn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .officer-hero__actions .officer-btn {
+    width: auto;
+  }
 }
 
 .officer-btn {
