@@ -50,8 +50,7 @@ The **Mareko Special Wereda Administration Platform** digitizes regional municip
 ### Backend
 - **Runtime Environment:** Node.js
 - **Web Framework:** Express.js
-- **Database:** MongoDB / PostgreSQL *(update according to your specific DB driver)*
-- **API Documentation:** Swagger / Postman
+- **Database:** MongoDB*
 
 ### Deployment & Hosting
 - **Frontend / Full Stack Hosting:** Vercel
